@@ -1,4 +1,3 @@
-from pydoc import cram
 import sys
 import os
 from Crypto.Cipher import ARC4
