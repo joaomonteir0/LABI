@@ -1,50 +1,26 @@
-from asyncore import read
-from hashlib import sha256
-import sys
 import os
+import sys
+import hashlib
 from Crypto.Cipher import AES
-from Crypto.Hash import SHA256
-import random
-import string
+from pkcs7 import PKCS7Encoder
 
+if len(sys.argv) < 2:
+    print("Usage: {} <file> <key>".format(sys.argv[0]))
+    sys.exit(1)
 
-if len(sys.argv) < 3:
-    #print("Invalid arguments!\n must be:\n>>> python3 ex8.py ficheiro.txt chave > criptograma")
-    exit(1)
-chave = sys.argv[2]
+fileName = sys.argv[1]
+key = sys.argv[2]
 
-if len(chave) < 16:
-    novaChave = SHA256.new()
-    novaChave.update(chave.encode("utf-8"))
-    novaChave = novaChave.hexdigest()
-    novaChave= novaChave[0:16]
-    chave = novaChave
-elif len(chave) > 16 and len(chave) < 24:
-    novaChave = SHA256.new()
-    novaChave.update(chave.encode("utf-8"))
-    novaChave = novaChave.hexdigest()
-    novaChave= novaChave[0:24]
-    chave = novaChave
-elif len(chave) > 24 and len(chave) < 32:
-    novaChave = SHA256.new()
-    novaChave.update(chave.encode("utf-8"))
-    novaChave = novaChave.hexdigest()
-    novaChave= novaChave[0:32]
-    chave = novaChave
-elif len(chave) > 32:
-    novaChave = SHA256.new()
-    novaChave.update(chave.encode("utf-8"))
-    novaChave = novaChave.hexdigest()
-    novaChave= novaChave[0:32]
-    chave = novaChave
+if len(key) < 16:
+    key = hashlib.sha256(key.encode()).hexdigest()
+key = key[:16]
 
-f = open(sys.argv[1], "rb")
-text = f.read()
-f.close()
+file = open(fileName, "rb")
+content = file.read()
+file.close()
 
-cryptogram = ""
-cipher = AES.new(chave)
-
-for i in range(0,int(len(text)/16)):
-    cryptogram = cipher.encrypt(str(text[i*16:(i+1)*15]))
-    print(cryptogram)
+pkcs7 = PKCS7Encoder(16)
+cipher = AES.new(key.encode('utf-8'), AES.MODE_ECB)
+text = pkcs7.encode(content.decode('utf-8'))
+cryptogram = cipher.encrypt( text.encode('utf-8') )
+os.write(1, cryptogram)
