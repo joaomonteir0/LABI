@@ -1,2 +1,2 @@
 # LABI
-LECI - Laboratórios de Informática
+Laboratórios de Informática - LECI
